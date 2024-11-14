@@ -411,13 +411,16 @@ server <- function(input, output) {
   ### GeneScore Analysis ####
   # Render the violin plot for the uploaded gene scores
   GeneScore_analysis <- eventReactive(input$upload_GeneScore, {
-    signature.names <- read.csv(input$upload_GeneScore$datapath, header = TRUE)  # Adjust for file format
-    signature.names <- as.character(signature.names$Gene)  # Assuming the file has a "Gene" column
+    signature.names <- read.csv(input$upload_GeneScore$datapath, header = TRUE)[,1]  # Adjust for file format
+    features.names <- list()
+    features.names[["Gene"]] <- signature.names  # Assuming the file has a "Gene" column
+    print(features.names)
     
     DefaultAssay(rds) <- "RNA"
-    rds <- AddModuleScore(rds, features = signature.names, ctrl = 5, name = 'ModuleScore1')
-    VlnPlot(rds, features = "ModuleScore1", group.by = "Site") + 
-      ggtitle("Module Score by Site")
+    rds <- AddModuleScore(rds, features = features.names, ctrl = 5, name = 'ModuleScore')
+    Idents(rds) <- 'Site'
+    VlnPlot(rds, features = "ModuleScore1") + 
+      ggtitle("Module Score across Cells")
   })
   
   output$GeneScore_RNA_VlnPlot <- renderPlot({
@@ -432,10 +435,14 @@ server <- function(input, output) {
   )
   
   GeneScore_analysis_FP <- eventReactive(input$upload_GeneScore, {
-    signature.names <- read.csv(input$upload_GeneScore$datapath, header = TRUE) 
-    signature.names <- as.character(signature.names$Gene)
+    signature.names <- read.csv(input$upload_GeneScore$datapath, header = TRUE)[,1] 
+    features.names <- list()
+    features.names[["Gene"]] <- signature.names  # Assuming the file has a "Gene" column
+    print(features.names)
+    
     DefaultAssay(rds) <- "RNA"
-    rds <- AddModuleScore(rds, features = signature.names, ctrl = 5, name = 'ModuleScore1')
+    rds <- AddModuleScore(rds, features = features.names, ctrl = 5, name = 'ModuleScore')
+    Idents(rds) <- 'Site'
     FeaturePlot(rds, features = "ModuleScore1") + 
       ggtitle("Module Score across Cells")
   })
